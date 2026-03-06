@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindGuard - Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page login-page">
+    <div class="auth-shell login-shell">
+        <section class="auth-panel login-panel">
+            <a href="/" class="brand auth-brand">
+                <span class="brand-mark">MG</span>
+                <span class="brand-text">MindGuard</span>
+            </a>
+
+            <h2>Welcome back</h2>
+            <p class="auth-subtext">Log in to continue your mental wellness journey.</p>
+
+            {% if error %}
+                <p class="auth-error">{{ error }}</p>
+            {% endif %}
+
+            <form class="auth-card login-card" action="/login" method="post">
+                <input type="hidden" name="next_url" value="{{ next_url }}">
+
+                <label class="auth-label">
+                    <span>Email Address</span>
+                    <div class="input-wrap">
+                        <span class="input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M4 7h16v10H4V7zm0 0l8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </span>
+                        <input type="email" name="email" value="{{ form_data.email }}" placeholder="you@example.com" required>
+                    </div>
+                </label>
+
+                <label class="auth-label">
+                    <span>Password</span>
+                    <div class="input-wrap">
+                        <span class="input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M7 10V8a5 5 0 1110 0v2M6 10h12v10H6V10z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </span>
+                        <input type="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                </label>
+
+                <button class="auth-submit" type="submit">
+                    Log In
+                    <span aria-hidden="true">-></span>
+                </button>
+            </form>
+
+            <p class="switch-auth">
+                Need an account?
+                <a href="/signup">Create one</a>
+            </p>
+        </section>
+    </div>
+</body>
+</html>

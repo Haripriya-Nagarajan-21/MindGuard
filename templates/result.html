@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindGuard - Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container result-box">
+        <h2>Stress Analysis Result</h2>
+
+        {% if prediction == "Low Stress" %}
+            <div class="result low">Low Stress</div>
+            <p>You are doing well. Keep maintaining a healthy routine.</p>
+
+        {% elif prediction == "Medium Stress" %}
+            <div class="result medium">Medium Stress</div>
+            <p>Try taking short breaks and managing your time better.</p>
+
+        {% else %}
+            <div class="result high">High Stress</div>
+            <p>You seem highly stressed. Support is recommended.</p>
+
+            <a href="/chatbot">
+                <button class="chat-btn">Talk to MindGuard Chatbot</button>
+            </a>
+        {% endif %}
+
+        <br>
+        <a href="/" class="back-link">&larr; Check Again</a>
+    </div>
+</body>
+</html>

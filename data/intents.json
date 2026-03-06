@@ -1,0 +1,42 @@
+{
+  "intents": [
+    {
+      "tag": "greeting",
+      "patterns": ["hi", "hello", "hey"],
+      "responses": ["Hello! How are you feeling today?"]
+    },
+    {
+      "tag": "stress",
+      "patterns": [
+        "i am stressed",
+        "too much pressure",
+        "feeling overwhelmed"
+      ],
+      "responses": [
+        "I'm sorry you're feeling stressed. Try taking short breaks and deep breathing."
+      ]
+    },
+    {
+      "tag": "sleep_problem",
+      "patterns": [
+        "i can't sleep",
+        "sleep issues",
+        "insomnia"
+      ],
+      "responses": [
+        "Try maintaining a regular sleep schedule and avoid screens before bed."
+      ]
+    },
+    {
+      "tag": "motivation",
+      "patterns": [
+        "i feel demotivated",
+        "no motivation",
+        "feeling low"
+      ],
+      "responses": [
+        "You are doing better than you think. Take one step at a time."
+      ]
+    }
+  ]
+}
