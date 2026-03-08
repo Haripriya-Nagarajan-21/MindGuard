@@ -5,5 +5,12 @@
     "role": "user",
     "password_hash": "scrypt:32768:8:1$Q5OBNvhah7ywj67j$8c4e11ae26a99fbb8de2e4ffd6b99ec2ddc1f73bec069ac511203c6c5a6fa62c0c932e4c1d21cab3ebe032cc2cdfc5452fee2031689ceab6353bd7b0553d445d",
     "created_at": "2026-03-06T16:22:12.509177Z"
+  },
+  "haripriya0521@gmail.com": {
+    "full_name": "Haripriya",
+    "email": "haripriya0521@gmail.com",
+    "role": "user",
+    "password_hash": "scrypt:32768:8:1$JsUxFlxyOUumB7iD$264f2a591ba05caea76cf3e6765b6d2908b506ebdce3b72feec0ad23552202b9dab016e0a5267c61f7d5b32b170b54644a1a61d7b3911a761d27053f0d208b26",
+    "created_at": "2026-03-08T12:59:02.901629Z"
   }
 }

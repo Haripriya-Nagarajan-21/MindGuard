@@ -55,6 +55,12 @@
                     Log In
                     <span aria-hidden="true">-></span>
                 </button>
+
+                <div class="auth-divider">
+                    <span>or continue with</span>
+                </div>
+
+                <a class="google-btn" href="{{ url_for('google_auth', next=next_url) }}">Continue with Google</a>
             </form>
 
             <p class="switch-auth">

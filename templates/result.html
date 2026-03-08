@@ -4,31 +4,310 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindGuard - Result</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <div class="container result-box">
-        <h2>Stress Analysis Result</h2>
+<body class="result-page">
+    <div class="site-shell">
+        <header class="topbar">
+            <div class="topbar-inner">
+                <a href="/" class="brand">
+                    <span class="brand-mark">MG</span>
+                    <span class="brand-text">MindGuard</span>
+                </a>
 
-        {% if prediction == "Low Stress" %}
-            <div class="result low">Low Stress</div>
-            <p>You are doing well. Keep maintaining a healthy routine.</p>
+                <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
 
-        {% elif prediction == "Medium Stress" %}
-            <div class="result medium">Medium Stress</div>
-            <p>Try taking short breaks and managing your time better.</p>
+                <div class="nav-panel" id="navPanel">
+                    <nav class="main-nav">
+                        <a href="/">Home</a>
+                        <a href="/assessment">Assessment</a>
+                        <a href="/chatbot">AI Assistant</a>
+                    </nav>
 
-        {% else %}
-            <div class="result high">High Stress</div>
-            <p>You seem highly stressed. Support is recommended.</p>
+                    <div class="nav-actions">
+                        {% if is_logged_in %}
+                            <a href="/logout" class="login-link">Log Out</a>
+                            <a href="/" class="stress-btn">Back to Home</a>
+                        {% else %}
+                            <a href="/login?next=/assessment" class="login-link">Log In</a>
+                            <a href="/signup" class="stress-btn">Create Account</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </header>
 
-            <a href="/chatbot">
-                <button class="chat-btn">Talk to MindGuard Chatbot</button>
-            </a>
-        {% endif %}
+        <main class="result-main section-pad">
+            <div class="container result-box">
+                <h2>Stress Analysis Result</h2>
+                {% if prediction == "Low Stress" %}
+                    <div class="result low">Low Stress</div>
+                {% elif prediction == "Medium Stress" %}
+                    <div class="result medium">Medium Stress</div>
+                {% else %}
+                    <div class="result high">High Stress</div>
+                {% endif %}
 
-        <br>
-        <a href="/" class="back-link">&larr; Check Again</a>
+                <p class="result-note">{{ plan.message }}</p>
+
+                <section class="innovation-panel">
+                    <div class="innovation-head">
+                        <h3>Your Personal Stress Fingerprint</h3>
+                        <span class="wellness-pill">Wellness Score: {{ wellness_score }}/100</span>
+                    </div>
+                    <div class="driver-grid">
+                        {% for driver in drivers %}
+                            <article class="driver-card">
+                                <div class="driver-head">
+                                    <h4>{{ driver.label }}</h4>
+                                    <span class="driver-severity {{ driver.severity_class }}">{{ driver.severity }} Impact</span>
+                                </div>
+                                <p>{{ driver.why }}</p>
+                                <small>Action: {{ driver.action }}</small>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="progress-panel">
+                    <div class="progress-top">
+                        <h3>Your Trend and Habit Momentum</h3>
+                        <span class="trend-chip {{ progress_summary.trend_class }}">{{ progress_summary.trend_text }}</span>
+                    </div>
+                    <div class="progress-stats">
+                        <article>
+                            <small>Total Check-ins</small>
+                            <strong>{{ progress_summary.total_checks }}</strong>
+                        </article>
+                        <article>
+                            <small>Check-in Streak</small>
+                            <strong>{{ progress_summary.streak_days }} day{% if progress_summary.streak_days != 1 %}s{% endif %}</strong>
+                        </article>
+                        <article>
+                            <small>Average Wellness</small>
+                            <strong>{{ progress_summary.avg_wellness }}/100</strong>
+                        </article>
+                        <article>
+                            <small>Current Level</small>
+                            <strong>{{ progress_summary.last_result }}</strong>
+                        </article>
+                    </div>
+                    <p class="focus-line"><strong>Priority Focus:</strong> {{ focus_tip }}</p>
+                    {% if progress_summary.bars %}
+                        <div class="trend-bars">
+                            {% for item in progress_summary.bars %}
+                                <span
+                                    class="trend-bar {{ item.level_class }}"
+                                    style="height: {{ item.height }}px"
+                                    title="{{ item.label }} - {{ item.level_text }}"
+                                ></span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section class="challenge-panel">
+                    <h3>Today's Micro-Challenge: {{ micro_challenge.title }}</h3>
+                    <ol>
+                        {% for step in micro_challenge.steps %}
+                            <li>{{ step }}</li>
+                        {% endfor %}
+                    </ol>
+                </section>
+
+                <section class="care-plan">
+                    <h3>Your Stress-Reduction Plan</h3>
+                    <div class="plan-grid">
+                        <article class="plan-card">
+                            <h4>Do Now (2-5 min)</h4>
+                            <ul>
+                                {% for step in plan.now_steps %}
+                                    <li>{{ step }}</li>
+                                {% endfor %}
+                            </ul>
+                        </article>
+                        <article class="plan-card">
+                            <h4>Do Today</h4>
+                            <ul>
+                                {% for step in plan.today_steps %}
+                                    <li>{{ step }}</li>
+                                {% endfor %}
+                            </ul>
+                        </article>
+                    </div>
+                    {% if plan.alert %}
+                        <p class="plan-alert">{{ plan.alert }}</p>
+                    {% endif %}
+                </section>
+
+                <section class="calm-tools">
+                    <article class="tool-card breathe-card">
+                        <h3>1-Minute Breathing Reset</h3>
+                        <p id="breathStatus">Press Start and follow the breathing rhythm.</p>
+                        <div class="breath-orb" id="breathOrb">
+                            <span id="breathPhase">Ready</span>
+                        </div>
+                        <div class="tool-actions">
+                            <button type="button" id="breathStart" class="tool-btn">Start</button>
+                            <button type="button" id="breathStop" class="tool-btn tool-btn-ghost">Stop</button>
+                        </div>
+                    </article>
+
+                    <article class="tool-card grounding-card">
+                        <h3>Grounding Prompt</h3>
+                        <p id="groundPrompt" class="ground-prompt">Press the button to get a grounding prompt.</p>
+                        <button type="button" id="nextPrompt" class="tool-btn">Show Prompt</button>
+                    </article>
+                </section>
+
+                <div class="result-links">
+                    {% if prediction == "High Stress" %}
+                        <a href="/chatbot" class="chat-btn">Talk to MindGuard Chatbot</a>
+                    {% endif %}
+                    <a href="/assessment" class="back-link">New Assessment</a>
+                    <a href="/" class="back-link">Back to Home</a>
+                </div>
+            </div>
+        </main>
     </div>
+
+    <script>
+        const navToggle = document.getElementById("navToggle");
+        const navPanel = document.getElementById("navPanel");
+        const topbarInner = document.querySelector(".topbar-inner");
+        const prompts = {{ grounding_prompts | tojson }};
+        const groundPrompt = document.getElementById("groundPrompt");
+        const nextPrompt = document.getElementById("nextPrompt");
+        const breathStart = document.getElementById("breathStart");
+        const breathStop = document.getElementById("breathStop");
+        const breathStatus = document.getElementById("breathStatus");
+        const breathPhase = document.getElementById("breathPhase");
+        const breathOrb = document.getElementById("breathOrb");
+
+        let promptIndex = -1;
+        let running = false;
+        let timer = null;
+        let remaining = 60;
+        let phaseIndex = 0;
+        let phaseRemaining = 4;
+
+        const phases = [
+            { label: "Inhale", duration: 4, scale: 1.15 },
+            { label: "Hold", duration: 4, scale: 1.15 },
+            { label: "Exhale", duration: 6, scale: 0.92 }
+        ];
+
+        if (navToggle && navPanel && topbarInner) {
+            navToggle.addEventListener("click", function () {
+                const isOpen = topbarInner.classList.toggle("is-open");
+                navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+            });
+
+            navPanel.querySelectorAll("a").forEach(function (link) {
+                link.addEventListener("click", function () {
+                    topbarInner.classList.remove("is-open");
+                    navToggle.setAttribute("aria-expanded", "false");
+                });
+            });
+        }
+
+        function showPrompt() {
+            if (!prompts || prompts.length === 0 || !groundPrompt) {
+                return;
+            }
+
+            let nextIndex = Math.floor(Math.random() * prompts.length);
+            if (prompts.length > 1 && nextIndex === promptIndex) {
+                nextIndex = (nextIndex + 1) % prompts.length;
+            }
+
+            promptIndex = nextIndex;
+            groundPrompt.textContent = prompts[promptIndex];
+        }
+
+        function applyPhase() {
+            if (!breathPhase || !breathOrb) {
+                return;
+            }
+            const phase = phases[phaseIndex];
+            breathPhase.textContent = phase.label;
+            breathOrb.style.transform = "scale(" + phase.scale + ")";
+        }
+
+        function stopBreathing(completed) {
+            running = false;
+            clearInterval(timer);
+            timer = null;
+            remaining = 60;
+            phaseIndex = 0;
+            phaseRemaining = phases[0].duration;
+
+            if (breathPhase) {
+                breathPhase.textContent = "Ready";
+            }
+            if (breathOrb) {
+                breathOrb.style.transform = "scale(1)";
+            }
+            if (breathStatus) {
+                breathStatus.textContent = completed
+                    ? "Great job. Your 1-minute reset is complete."
+                    : "Breathing reset stopped. Press Start when ready.";
+            }
+        }
+
+        function tick() {
+            remaining -= 1;
+            phaseRemaining -= 1;
+
+            if (phaseRemaining <= 0) {
+                phaseIndex = (phaseIndex + 1) % phases.length;
+                phaseRemaining = phases[phaseIndex].duration;
+                applyPhase();
+            }
+
+            if (breathStatus) {
+                breathStatus.textContent = "Follow " + phases[phaseIndex].label.toLowerCase() + " - " + remaining + "s left";
+            }
+
+            if (remaining <= 0) {
+                stopBreathing(true);
+            }
+        }
+
+        if (nextPrompt) {
+            nextPrompt.addEventListener("click", showPrompt);
+        }
+        showPrompt();
+
+        if (breathStart) {
+            breathStart.addEventListener("click", function () {
+                if (running) {
+                    return;
+                }
+                running = true;
+                remaining = 60;
+                phaseIndex = 0;
+                phaseRemaining = phases[0].duration;
+                applyPhase();
+                if (breathStatus) {
+                    breathStatus.textContent = "Follow inhale - " + remaining + "s left";
+                }
+                timer = setInterval(tick, 1000);
+            });
+        }
+
+        if (breathStop) {
+            breathStop.addEventListener("click", function () {
+                stopBreathing(false);
+            });
+        }
+    </script>
 </body>
 </html>

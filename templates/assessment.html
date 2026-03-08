@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindGuard - Stress Assessment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="index-page">
+    <div class="site-shell">
+        <header class="topbar">
+            <div class="topbar-inner">
+                <a href="/" class="brand">
+                    <span class="brand-mark">MG</span>
+                    <span class="brand-text">MindGuard</span>
+                </a>
+
+                <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <div class="nav-panel" id="navPanel">
+                    <nav class="main-nav">
+                        <a href="/">Home</a>
+                        <a href="/chatbot">AI Assistant</a>
+                    </nav>
+
+                    <div class="nav-actions">
+                        {% if is_logged_in %}
+                            <a href="/logout" class="login-link">Log Out</a>
+                            <a href="/" class="stress-btn">Back to Home</a>
+                        {% else %}
+                            <a href="/login?next=/assessment" class="login-link">Log In</a>
+                            <a href="/signup" class="stress-btn">Create Account</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <section class="assessment section-pad">
+                <div class="section-head">
+                    <p class="eyebrow">Stress Check</p>
+                    <h2>Quick Stress Assessment</h2>
+                    <p>Enter your daily metrics and get your stress prediction instantly.</p>
+                </div>
+
+                {% if progress_summary and progress_summary.total_checks > 0 %}
+                    <section class="assessment-insights">
+                        <div class="insight-top">
+                            <h3>Your Progress Snapshot</h3>
+                            <span class="trend-chip {{ progress_summary.trend_class }}">{{ progress_summary.trend_text }}</span>
+                        </div>
+                        <div class="insight-stats">
+                            <article>
+                                <small>Last Result</small>
+                                <strong>{{ progress_summary.last_result }}</strong>
+                            </article>
+                            <article>
+                                <small>Avg Wellness</small>
+                                <strong>{{ progress_summary.avg_wellness }}/100</strong>
+                            </article>
+                            <article>
+                                <small>Check-in Streak</small>
+                                <strong>{{ progress_summary.streak_days }} day{% if progress_summary.streak_days != 1 %}s{% endif %}</strong>
+                            </article>
+                            <article>
+                                <small>Total Check-ins</small>
+                                <strong>{{ progress_summary.total_checks }}</strong>
+                            </article>
+                        </div>
+                        <p class="focus-line"><strong>Focus Today:</strong> {{ focus_tip }}</p>
+                        <div class="mini-trend-bars">
+                            {% for item in progress_summary.bars %}
+                                <span
+                                    class="mini-trend-bar {{ item.level_class }}"
+                                    style="height: {{ item.height }}px"
+                                    title="{{ item.label }} - {{ item.level_text }}"
+                                ></span>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endif %}
+
+                <form class="assessment-form" action="/predict" method="post">
+                    {% if not is_logged_in %}
+                        <p class="assessment-lock">
+                            Login is required to submit prediction.
+                            <a href="/login?next=/assessment">Go to Login</a>
+                        </p>
+                    {% endif %}
+
+                    <div class="form-grid">
+                        <label>
+                            <span>Sleep Hours</span>
+                            <input type="number" step="any" name="sleep_hours" placeholder="e.g. 8" required>
+                        </label>
+                        <label>
+                            <span>Work / Study Hours</span>
+                            <input type="number" step="any" name="work_study_hours" placeholder="e.g. 6" required>
+                        </label>
+                        <label>
+                            <span>Screen Time</span>
+                            <input type="number" step="any" name="screen_time" placeholder="e.g. 4" required>
+                        </label>
+                        <label>
+                            <span>Physical Activity</span>
+                            <input type="number" step="any" name="physical_activity" placeholder="e.g. 1" required>
+                        </label>
+                    </div>
+
+                    <div class="mood-wrap">
+                        <div class="mood-head">
+                            <span>Current Mood Level</span>
+                            <strong><span id="moodValue">5</span>/10</strong>
+                        </div>
+                        <input id="moodInput" type="range" min="1" max="10" value="5" name="mood" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary form-submit" {% if not is_logged_in %}disabled{% endif %}>
+                        Analyze My Stress Now
+                    </button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const navToggle = document.getElementById("navToggle");
+        const navPanel = document.getElementById("navPanel");
+        const topbarInner = document.querySelector(".topbar-inner");
+        const moodInput = document.getElementById("moodInput");
+        const moodValue = document.getElementById("moodValue");
+
+        if (navToggle && navPanel && topbarInner) {
+            navToggle.addEventListener("click", function () {
+                const isOpen = topbarInner.classList.toggle("is-open");
+                navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+            });
+
+            navPanel.querySelectorAll("a").forEach(function (link) {
+                link.addEventListener("click", function () {
+                    topbarInner.classList.remove("is-open");
+                    navToggle.setAttribute("aria-expanded", "false");
+                });
+            });
+        }
+
+        if (moodInput && moodValue) {
+            moodInput.addEventListener("input", function () {
+                moodValue.textContent = moodInput.value;
+            });
+        }
+    </script>
+</body>
+</html>

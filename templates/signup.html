@@ -20,14 +20,6 @@
                 MindGuard uses advanced machine learning to analyze your lifestyle patterns, helping you
                 predict stressors and manage your peace of mind proactively.
             </p>
-            <div class="showcase-proof">
-                <div class="avatar-stack" aria-hidden="true">
-                    <span class="avatar avatar-a"></span>
-                    <span class="avatar avatar-b"></span>
-                    <span class="avatar avatar-c"></span>
-                </div>
-                <span>Joined by 10,000+ users worldwide</span>
-            </div>
         </section>
 
         <section class="auth-panel">
@@ -152,7 +144,7 @@
                     <span>or continue with</span>
                 </div>
 
-                <button class="google-btn" type="button">Sign up with Google</button>
+                <a class="google-btn" href="{{ url_for('google_auth', next='/') }}">Continue with Google</a>
             </form>
 
             <p class="switch-auth">

@@ -34,7 +34,7 @@
                     <div class="nav-actions">
                         {% if is_logged_in %}
                             <a href="/logout" class="login-link">Log Out</a>
-                            <a href="#assessment" class="stress-btn">Analyze My Stress</a>
+                            <a href="/assessment" class="stress-btn">Analyze My Stress</a>
                         {% else %}
                             <a href="/login" class="login-link">Log In</a>
                             <a href="/signup" class="stress-btn">Create Account</a>
@@ -59,7 +59,7 @@
                     </p>
                     <div class="hero-actions">
                         {% if is_logged_in %}
-                            <a href="#assessment" class="btn btn-primary">Analyze My Stress</a>
+                            <a href="/assessment" class="btn btn-primary">Analyze My Stress</a>
                         {% else %}
                             <a href="/signup" class="btn btn-primary">Create Account</a>
                         {% endif %}
@@ -160,7 +160,7 @@
                     </p>
                     <div class="solution-stats">
                         <div>
-                            <strong>94.8%</strong>
+                            <strong>84%</strong>
                             <span>Prediction Accuracy</span>
                         </div>
                         <div>
@@ -169,53 +169,6 @@
                         </div>
                     </div>
                 </aside>
-            </section>
-
-            <section id="assessment" class="assessment section-pad">
-                <div class="section-head">
-                    <h2>Quick Stress Assessment</h2>
-                    <p>Enter your daily metrics and get your stress prediction instantly.</p>
-                </div>
-
-                <form class="assessment-form" action="/predict" method="post">
-                    {% if not is_logged_in %}
-                        <p class="assessment-lock">
-                            Login is required to submit prediction.
-                            <a href="/login">Go to Login</a>
-                        </p>
-                    {% endif %}
-
-                    <div class="form-grid">
-                        <label>
-                            <span>Sleep Hours</span>
-                            <input type="number" step="any" name="sleep_hours" placeholder="e.g. 8" required>
-                        </label>
-                        <label>
-                            <span>Work / Study Hours</span>
-                            <input type="number" step="any" name="work_study_hours" placeholder="e.g. 6" required>
-                        </label>
-                        <label>
-                            <span>Screen Time</span>
-                            <input type="number" step="any" name="screen_time" placeholder="e.g. 4" required>
-                        </label>
-                        <label>
-                            <span>Physical Activity</span>
-                            <input type="number" step="any" name="physical_activity" placeholder="e.g. 1" required>
-                        </label>
-                    </div>
-
-                    <div class="mood-wrap">
-                        <div class="mood-head">
-                            <span>Current Mood Level</span>
-                            <strong><span id="moodValue">5</span>/10</strong>
-                        </div>
-                        <input id="moodInput" type="range" min="1" max="10" value="5" name="mood" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary form-submit" {% if not is_logged_in %}disabled{% endif %}>
-                        Analyze My Stress Now
-                    </button>
-                </form>
             </section>
 
             <section class="cta section-pad">
@@ -227,7 +180,7 @@
                     </p>
                     <div class="cta-actions">
                         {% if is_logged_in %}
-                            <a href="#assessment" class="btn cta-light">Analyze My Stress Now</a>
+                            <a href="/assessment" class="btn cta-light">Analyze My Stress Now</a>
                         {% else %}
                             <a href="/signup" class="btn cta-light">Create Account</a>
                         {% endif %}
@@ -287,8 +240,6 @@
         const navToggle = document.getElementById("navToggle");
         const navPanel = document.getElementById("navPanel");
         const topbarInner = document.querySelector(".topbar-inner");
-        const moodInput = document.getElementById("moodInput");
-        const moodValue = document.getElementById("moodValue");
 
         if (navToggle && navPanel && topbarInner) {
             navToggle.addEventListener("click", function () {
@@ -301,12 +252,6 @@
                     topbarInner.classList.remove("is-open");
                     navToggle.setAttribute("aria-expanded", "false");
                 });
-            });
-        }
-
-        if (moodInput && moodValue) {
-            moodInput.addEventListener("input", function () {
-                moodValue.textContent = moodInput.value;
             });
         }
     </script>
