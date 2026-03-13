@@ -99,19 +99,19 @@
                     <div class="form-grid">
                         <label>
                             <span>Sleep Hours</span>
-                            <input type="number" step="any" name="sleep_hours" placeholder="e.g. 8" required>
+                            <input id="sleepHours" type="number" step="any" name="sleep_hours" placeholder="e.g. 8" required>
                         </label>
                         <label>
                             <span>Work / Study Hours</span>
-                            <input type="number" step="any" name="work_study_hours" placeholder="e.g. 6" required>
+                            <input id="workHours" type="number" step="any" name="work_study_hours" placeholder="e.g. 6" required>
                         </label>
                         <label>
                             <span>Screen Time</span>
-                            <input type="number" step="any" name="screen_time" placeholder="e.g. 4" required>
+                            <input id="screenTime" type="number" step="any" name="screen_time" placeholder="e.g. 4" required>
                         </label>
                         <label>
                             <span>Physical Activity</span>
-                            <input type="number" step="any" name="physical_activity" placeholder="e.g. 1" required>
+                            <input id="activity" type="number" step="any" name="physical_activity" placeholder="e.g. 1" required>
                         </label>
                     </div>
 
@@ -123,6 +123,19 @@
                         <input id="moodInput" type="range" min="1" max="10" value="5" name="mood" required>
                     </div>
 
+                    <section class="assessment-live" aria-label="Live wellness preview">
+                        <div class="live-head">
+                            <h3>Live Wellness Preview</h3>
+                            <span class="live-score"><span id="liveScore">--</span>/100</span>
+                        </div>
+                        <p id="liveTip" class="live-tip">
+                            Adjust your inputs to see an estimated wellness score. Your final stress prediction appears after submit.
+                        </p>
+                        <div class="live-meter" aria-hidden="true">
+                            <div class="live-meter-fill" id="liveFill" style="width: 0%;"></div>
+                        </div>
+                    </section>
+
                     <button type="submit" class="btn btn-primary form-submit" {% if not is_logged_in %}disabled{% endif %}>
                         Analyze My Stress Now
                     </button>
@@ -131,12 +144,21 @@
         </main>
     </div>
 
+    {% include "_chat_widget.html" %}
+
     <script>
         const navToggle = document.getElementById("navToggle");
         const navPanel = document.getElementById("navPanel");
         const topbarInner = document.querySelector(".topbar-inner");
         const moodInput = document.getElementById("moodInput");
         const moodValue = document.getElementById("moodValue");
+        const sleepHours = document.getElementById("sleepHours");
+        const workHours = document.getElementById("workHours");
+        const screenTime = document.getElementById("screenTime");
+        const activity = document.getElementById("activity");
+        const liveScore = document.getElementById("liveScore");
+        const liveFill = document.getElementById("liveFill");
+        const liveTip = document.getElementById("liveTip");
 
         if (navToggle && navPanel && topbarInner) {
             navToggle.addEventListener("click", function () {
@@ -157,6 +179,92 @@
                 moodValue.textContent = moodInput.value;
             });
         }
+
+        function clamp(value, low, high) {
+            return Math.max(low, Math.min(high, value));
+        }
+
+        function readNumber(el) {
+            if (!el) return null;
+            const value = parseFloat(el.value);
+            return Number.isFinite(value) ? value : null;
+        }
+
+        function computeWellness(sleep, work, screen, move, mood) {
+            const sleepScore = 100 - Math.abs(sleep - 8.0) * 15;
+            const workloadScore = 100 - Math.max(0, work - 8.0) * 12;
+            const screenScore = 100 - Math.max(0, screen - 4.0) * 11;
+            const activityScore = Math.min(100, move * 70);
+            const moodScore = mood * 10;
+
+            const weighted =
+                clamp(sleepScore, 0, 100) * 0.26 +
+                clamp(workloadScore, 0, 100) * 0.16 +
+                clamp(screenScore, 0, 100) * 0.17 +
+                clamp(activityScore, 0, 100) * 0.17 +
+                clamp(moodScore, 0, 100) * 0.24;
+
+            return Math.round(clamp(weighted, 0, 100));
+        }
+
+        function computeTopDriver(sleep, work, screen, move, mood) {
+            const drivers = [];
+            if (sleep < 7) drivers.push({ key: "sleep", label: "Sleep", impact: (7 - sleep) * 18 });
+            if (work > 8) drivers.push({ key: "workload", label: "Workload", impact: (work - 8) * 14 });
+            if (screen > 5) drivers.push({ key: "screen", label: "Screen time", impact: (screen - 5) * 12 });
+            if (move < 1) drivers.push({ key: "activity", label: "Movement", impact: (1 - move) * 22 });
+            if (mood < 6) drivers.push({ key: "mood", label: "Mood", impact: (6 - mood) * 13 });
+
+            if (drivers.length === 0) return null;
+            drivers.sort((a, b) => b.impact - a.impact);
+            return drivers[0];
+        }
+
+        function updateLivePreview() {
+            if (!liveScore || !liveFill || !liveTip) return;
+
+            const sleep = readNumber(sleepHours);
+            const work = readNumber(workHours);
+            const screen = readNumber(screenTime);
+            const move = readNumber(activity);
+            const mood = readNumber(moodInput);
+
+            if (sleep === null || work === null || screen === null || move === null || mood === null) {
+                liveScore.textContent = "--";
+                liveFill.style.width = "0%";
+                liveTip.textContent = "Adjust your inputs to see an estimated wellness score. Your final stress prediction appears after submit.";
+                return;
+            }
+
+            const score = computeWellness(sleep, work, screen, move, mood);
+            liveScore.textContent = String(score);
+            liveFill.style.width = String(clamp(score, 0, 100)) + "%";
+
+            const top = computeTopDriver(sleep, work, screen, move, mood);
+            if (!top) {
+                liveTip.textContent = "Your routine looks fairly balanced. If you want, submit to get a stress prediction + action plan.";
+            } else if (top.key === "sleep") {
+                liveTip.textContent = "Biggest stress driver looks like sleep. Even +45 minutes tonight can help tomorrow.";
+            } else if (top.key === "workload") {
+                liveTip.textContent = "Biggest stress driver looks like workload. Try a 25-minute focus block and 5-minute break.";
+            } else if (top.key === "screen") {
+                liveTip.textContent = "Biggest stress driver looks like screen time. Add a 5-minute recovery break each hour.";
+            } else if (top.key === "activity") {
+                liveTip.textContent = "Biggest stress driver looks like low movement. A 10-15 minute walk can reset your mood.";
+            } else if (top.key === "mood") {
+                liveTip.textContent = "Biggest stress driver looks like mood. Try one grounding prompt and message someone you trust.";
+            } else {
+                liveTip.textContent = "Submit to get your stress prediction and a personalized plan.";
+            }
+        }
+
+        [sleepHours, workHours, screenTime, activity, moodInput].forEach((el) => {
+            if (!el) return;
+            el.addEventListener("input", updateLivePreview);
+            el.addEventListener("change", updateLivePreview);
+        });
+
+        updateLivePreview();
     </script>
 </body>
 </html>

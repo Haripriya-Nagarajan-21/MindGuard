@@ -12,6 +12,9 @@ import urllib.error
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
+import storage_mysql
+import chatbot_llm
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "mindguard_dev_secret")
 
@@ -33,6 +36,17 @@ LEVEL_CLASS_MAP = {
     1: "medium",
     2: "high",
 }
+
+
+def is_mysql_storage_enabled():
+    mode = os.environ.get("MINDGUARD_STORAGE", "").strip().lower()
+    if mode == "mysql":
+        return True
+    if mode == "json":
+        return False
+
+    # Auto-detect: enable MySQL when basic config is present.
+    return storage_mysql.is_configured()
 
 
 def default_signup_form():
@@ -61,6 +75,9 @@ def build_google_oauth_error_redirect(message):
 
 
 def load_users():
+    if is_mysql_storage_enabled():
+        return storage_mysql.load_users()
+
     if not os.path.exists(USERS_DB_PATH):
         return {}
 
@@ -74,6 +91,10 @@ def load_users():
 
 
 def save_users(users):
+    if is_mysql_storage_enabled():
+        storage_mysql.save_users(users)
+        return
+
     os.makedirs(os.path.dirname(USERS_DB_PATH), exist_ok=True)
     with open(USERS_DB_PATH, "w", encoding="utf-8") as users_file:
         json.dump(users, users_file, indent=2)
@@ -275,6 +296,9 @@ def build_micro_challenge(driver_key):
 
 
 def append_user_assessment(email, entry):
+    if is_mysql_storage_enabled():
+        return storage_mysql.append_user_assessment(email, entry)
+
     all_assessments = load_assessments()
     user_entries = all_assessments.get(email, [])
     if not isinstance(user_entries, list):
@@ -287,6 +311,9 @@ def append_user_assessment(email, entry):
 
 
 def get_user_assessments(email):
+    if is_mysql_storage_enabled():
+        return storage_mysql.get_user_assessments(email)
+
     all_assessments = load_assessments()
     user_entries = all_assessments.get(email, [])
     return user_entries if isinstance(user_entries, list) else []
@@ -829,16 +856,59 @@ def chatbot_page():
 # ---------------- CHATBOT API ----------------
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_msg = request.json["message"]
+    payload = request.get_json(silent=True) or {}
+    user_msg = str(payload.get("message", "")).strip()
+    history = payload.get("history")
+
+    if not user_msg:
+        return jsonify({"reply": "Send a message and I’ll respond."})
+
+    crisis_reply = chatbot_llm.crisis_reply_if_needed(user_msg)
+    if crisis_reply:
+        return jsonify({"reply": crisis_reply})
+
+    if chatbot_llm.is_enabled():
+        try:
+            reply = chatbot_llm.generate_reply(user_msg, history=history)
+            return jsonify({"reply": reply})
+        except RuntimeError:
+            # Fall back to the local intent model if the LLM call fails.
+            pass
 
     X = vectorizer.transform([user_msg])
-    intent = chatbot_model.predict(X)[0]
 
-    for i in intents["intents"]:
-        if i["tag"] == intent:
-            return jsonify({"reply": random.choice(i["responses"])})
+    fallback_reply = (
+        "I’m here with you. What’s the main thing stressing you right now: sleep, workload, screen time, mood, or something else?"
+    )
 
-    return jsonify({"reply": "I'm here to help. Please tell me more."})
+    intent = None
+    confidence = None
+    if hasattr(chatbot_model, "predict_proba"):
+        try:
+            proba = chatbot_model.predict_proba(X)[0]
+            best_index = int(np.argmax(proba))
+            confidence = float(proba[best_index])
+            intent = str(chatbot_model.classes_[best_index])
+        except Exception:
+            intent = None
+            confidence = None
+    if intent is None:
+        try:
+            intent = str(chatbot_model.predict(X)[0])
+        except Exception:
+            intent = None
+
+    # If the classifier is unsure, do not force an unrelated canned intent.
+    if confidence is not None and confidence < 0.35:
+        return jsonify({"reply": fallback_reply})
+
+    for i in intents.get("intents", []):
+        if i.get("tag") == intent:
+            responses = i.get("responses") or []
+            if isinstance(responses, list) and responses:
+                return jsonify({"reply": random.choice(responses)})
+
+    return jsonify({"reply": fallback_reply})
 
 
 # ---------------- RUN SERVER ----------------

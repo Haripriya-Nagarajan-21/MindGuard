@@ -1,0 +1,35 @@
+<!-- Floating chat widget (shared across pages) -->
+<button type="button" class="mg-chat-fab" id="mgChatFab" aria-label="Open MindGuard chat" aria-expanded="false">
+    <span class="mg-chat-fab-icon" aria-hidden="true">💬</span>
+    <span class="mg-chat-fab-badge" id="mgChatBadge" aria-hidden="true"></span>
+</button>
+
+<section class="mg-chat-panel" id="mgChatPanel" aria-label="MindGuard chat" aria-hidden="true">
+    <header class="mg-chat-panel-head">
+        <div class="mg-chat-panel-title">
+            <strong>MindGuard</strong>
+            <small>Support Assistant</small>
+        </div>
+        <button type="button" class="mg-chat-close" id="mgChatClose" aria-label="Close chat">✕</button>
+    </header>
+
+    <div class="mg-chat-disclaimer">
+        Not a medical service. If you feel unsafe or in immediate danger, contact local emergency support.
+    </div>
+
+    <div class="mg-chat-messages" id="mgChatMessages" role="log" aria-live="polite"></div>
+
+    <div class="mg-chat-chips" id="mgChatChips" aria-label="Quick prompts">
+        <button type="button" class="mg-chip" data-chip="I'm feeling stressed.">I'm stressed</button>
+        <button type="button" class="mg-chip" data-chip="I can't sleep. Can you help me?">Sleep</button>
+        <button type="button" class="mg-chip" data-chip="I feel anxious. What can I do right now?">Anxiety</button>
+        <button type="button" class="mg-chip" data-chip="Help me make a simple plan for today.">Plan</button>
+    </div>
+
+    <form class="mg-chat-input" id="mgChatForm">
+        <input type="text" id="mgChatText" placeholder="Ask anything..." autocomplete="off">
+        <button type="submit" class="mg-chat-send" aria-label="Send message">Send</button>
+    </form>
+</section>
+
+<script src="{{ url_for('static', filename='chat_widget.js') }}"></script>

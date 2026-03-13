@@ -309,5 +309,16 @@
             });
         }
     </script>
+
+    <script>
+        window.MG_CHAT_CONTEXT = {
+            page: "result",
+            prediction: {{ prediction | tojson }},
+            wellness_score: {{ wellness_score | tojson }},
+            drivers: {{ drivers | tojson }},
+        };
+    </script>
+
+    {% include "_chat_widget.html" %}
 </body>
 </html>

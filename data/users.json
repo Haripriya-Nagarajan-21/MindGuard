@@ -12,5 +12,12 @@
     "role": "user",
     "password_hash": "scrypt:32768:8:1$JsUxFlxyOUumB7iD$264f2a591ba05caea76cf3e6765b6d2908b506ebdce3b72feec0ad23552202b9dab016e0a5267c61f7d5b32b170b54644a1a61d7b3911a761d27053f0d208b26",
     "created_at": "2026-03-08T12:59:02.901629Z"
+  },
+  "haripriya2110@gmail.com": {
+    "full_name": "Haripriya",
+    "email": "haripriya2110@gmail.com",
+    "role": "user",
+    "password_hash": "scrypt:32768:8:1$eLjT0RtoIUKzRBCh$7127d2fd2547bf791f6562df3d0a15838caa4fb4db420f200caa9c764abc5a555cacb2f0fb2e2892963631a5666ff06cec409ca9d5e85c7ed03e50f7fe032ebe",
+    "created_at": "2026-03-13T16:51:11.062722Z"
   }
 }
